@@ -38,7 +38,7 @@ namespace
 
     juce::String modalLabelForStatus(int status) { return pillLabelForStatus(status).toUpperCase(); }
 
-    // Overdue is intentionally NOT in this list — the SDK's background
+    // Overdue is intentionally NOT in this list - the SDK's background
     // check-in clears it without buyer action; a banner would just confuse.
     bool statusNeedsBanner(int status)
     {
@@ -56,9 +56,9 @@ namespace
     }
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// ===================================================================
 //  LicenseStatusPill
-// ═══════════════════════════════════════════════════════════════════
+// ===================================================================
 
 // Polls currentStatus() at 250ms cadence and redraws when it flips.
 // We don't get notified by the SDK on state changes, so the UI is
@@ -117,9 +117,9 @@ void LicenseStatusPill::mouseDown(const juce::MouseEvent&)
     if (onClicked) onClicked();
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// ===================================================================
 //  LicenseBanner
-// ═══════════════════════════════════════════════════════════════════
+// ===================================================================
 
 LicenseBanner::LicenseBanner()
 {
@@ -165,9 +165,9 @@ void LicenseBanner::mouseDown(const juce::MouseEvent&)
     if (onClicked) onClicked();
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// ===================================================================
 //  LicenseModalComponent
-// ═══════════════════════════════════════════════════════════════════
+// ===================================================================
 
 LicenseModalComponent::LicenseModalComponent()
 {
@@ -398,9 +398,9 @@ void LicenseModalComponent::onDeactivate()
         });
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// ===================================================================
 //  JucerguyEditor
-// ═══════════════════════════════════════════════════════════════════
+// ===================================================================
 
 JucerguyEditor::JucerguyEditor(JucerguyProcessor& p)
     : AudioProcessorEditor(p), processorRef(p)

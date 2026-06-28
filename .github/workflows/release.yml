@@ -1,7 +1,7 @@
 name: Release SDK Tag
 
 # Manual-only. Run from the Actions tab when ready to cut a release.
-# Workflow does NOT auto-fire on push — every release is a deliberate click.
+# Workflow does NOT auto-fire on push - every release is a deliberate click.
 #
 # Security note: workflow inputs are passed via `env:` blocks so shell
 # substitution happens on quoted vars, not raw interpolation. Direct
@@ -46,7 +46,7 @@ jobs:
           VERSION: ${{ inputs.version }}
         run: |
           if git rev-parse "sdk-v$VERSION" >/dev/null 2>&1; then
-            echo "::error::Tag sdk-v$VERSION already exists. Tags are immutable — pick a new version."
+            echo "::error::Tag sdk-v$VERSION already exists. Tags are immutable - pick a new version."
             exit 1
           fi
 
@@ -83,7 +83,7 @@ jobs:
         env:
           VERSION: ${{ inputs.version }}
         run: |
-          # sed pattern only replaces the value, never the key — pattern-anchored
+          # sed pattern only replaces the value, never the key - pattern-anchored
           # to ^version = so other version fields elsewhere are untouched.
           sed -i "s/^version = \".*\"/version = \"$VERSION\"/" Cargo.toml
           echo "Cargo.toml now:"

@@ -205,6 +205,18 @@ pub fn current_status() -> Status {
     }
 }
 
+/// Q32.32 identity multiplier (1.0) for [`freqlab_dsp_coefficient`]. Divide
+/// the coefficient by this in your `freqlab_dsp` helper to get a gain.
+pub const FREQLAB_DSP_IDENTITY: u64 = 1 << 32;
+
+/// Opt-in DSP-fold coefficient. In local / stub builds this is always the
+/// identity value (a no-op multiplier), so your audio is unaffected while you
+/// develop; the freqlab cloud build supplies the real implementation when you
+/// fold it in via the `@freqlab:dsp-fold` tag. Audio-thread safe.
+pub fn freqlab_dsp_coefficient() -> u64 {
+    FREQLAB_DSP_IDENTITY
+}
+
 /// Activate this machine for the supplied license key. Blocking in cloud
 /// builds; call from a non-realtime thread.
 pub fn validate_and_activate(_key: &str) -> Result<LicenseInfo, Error> {

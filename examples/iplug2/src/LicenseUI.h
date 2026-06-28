@@ -82,7 +82,7 @@ inline const char* ModalLabel(freqlab::licensing::Status s) {
     return "";
 }
 
-// Overdue is intentionally NOT in this list — the SDK's background
+// Overdue is intentionally NOT in this list - the SDK's background
 // check-in clears it without buyer action.
 inline bool StatusNeedsBanner(freqlab::licensing::Status s) {
     using S = freqlab::licensing::Status;

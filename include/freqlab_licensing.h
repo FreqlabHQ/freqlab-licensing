@@ -71,6 +71,16 @@ LicenseInfo current();
 /// Lock-free read of the Status enum. Audio-thread safe.
 Status currentStatus();
 
+/// Q32.32 identity multiplier (1.0) for freqlab_dsp_coefficient(). Divide the
+/// coefficient by this in your freqlab_dsp helper to get a gain.
+inline constexpr std::uint64_t FREQLAB_DSP_IDENTITY = std::uint64_t{1} << 32;
+
+/// Opt-in DSP-fold coefficient. In local / stub builds this is always the
+/// identity value (a no-op multiplier); the freqlab cloud build supplies the
+/// real implementation when you fold it in via the @freqlab:dsp-fold tag.
+/// Audio-thread safe.
+std::uint64_t freqlab_dsp_coefficient();
+
 /// Activate this machine against the supplied license key. Callbacks fire
 /// on a worker thread; marshal back to your UI thread before touching UI.
 void validateAndActivate(

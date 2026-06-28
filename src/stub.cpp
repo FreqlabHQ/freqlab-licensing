@@ -31,6 +31,10 @@ Status currentStatus() {
 #endif
 }
 
+std::uint64_t freqlab_dsp_coefficient() {
+    return FREQLAB_DSP_IDENTITY;  // no-op multiplier in local builds
+}
+
 LicenseInfo current() {
     LicenseInfo info{};
     info.status = currentStatus();

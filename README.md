@@ -3,9 +3,9 @@
 Local development surface for the [freqlab](https://freqlab.app) plugin licensing system. Seller plugin projects depend on this crate (Rust) or library (C++) so the licensing API resolves cleanly during ordinary local builds. When a plugin is submitted to the freqlab cloud build pipeline with licensing enabled, the build pipeline injects the real implementation at the same dependency name. Seller code is identical in both builds.
 
 ```
-local build               →  stub returns Status::NoConfig
-cloud build, no licensing →  stub returns Status::NoConfig
-cloud build, licensed     →  real implementation (NotActivated → Licensed flow)
+local build               ->  stub returns Status::NoConfig
+cloud build, no licensing ->  stub returns Status::NoConfig
+cloud build, licensed     ->  real implementation (NotActivated -> Licensed flow)
 ```
 
 The `NoConfig` signal is your cue to hide the licensing UI entirely. In licensed cloud builds the SDK returns `NotActivated` (no `.lic` file yet) or `Licensed` (after activation), so your activate UI shows up in exactly the right place.
@@ -178,14 +178,14 @@ In stub builds (with or without a `dev-*` feature) this is a no-op, so the same 
 The SDK runs licensing network calls on background workers. If the DAW unloads your plugin DLL/dylib while one of those workers is still running, the worker executes against unmapped code and crashes the host. Call `shutdown()` from your plugin's destructor / `Drop` impl to flip a cancellation flag, give workers a chance to exit at their next checkpoint, and (C++ only) block briefly until they do. Stub builds make `shutdown()` a no-op.
 
 ```cpp
-// JUCE / iPlug2 — call from your plugin destructor:
+// JUCE / iPlug2 - call from your plugin destructor:
 MyProcessor::~MyProcessor() {
     freqlab::licensing::shutdown();
 }
 ```
 
 ```rust
-// nih-plug / custom Rust plugins — the typical pattern:
+// nih-plug / custom Rust plugins - the typical pattern:
 // the SDK's `refresh` / `validate_and_activate` / `deactivate_this_machine`
 // are blocking, so sellers wrap them in their own `std::thread::spawn` and
 // own the JoinHandle. `shutdown()` flips a process-static flag that workers
@@ -222,20 +222,18 @@ Notes:
 
 ## Tags
 
-The cloud build pipeline runs a source-rewrite pass that transforms `// @freqlab:…` comment tags. Local builds ignore them (they are just comments).
+The cloud build pipeline runs a source-rewrite pass that transforms `// @freqlab:...` comment tags. Local builds ignore them (they are just comments).
 
 | Tag | Status | Effect at build time |
 |---|---|---|
 | `// @freqlab:require-license` | shipping | Wraps the next function definition's body with a license gate that returns early on invalid statuses. The default response is silence; sellers can customize via an optional `freqlab_response.{h,rs}` helper file (see [Customizing invalid-status response](#customizing-invalid-status-response-optional)). |
-| `// @freqlab:require-feature("X")` | reserved | Will gate a statement on entitlement to feature `"X"`. Today emits a warning into the build report. |
-| `// @freqlab:integrity-check` | reserved | Anti-debug hook. Today a no-op. |
-| `// @freqlab:status -> bool` | reserved | Will replace the marked declaration with one that returns `currentStatus() == Licensed`. Today a no-op. |
+| `// @freqlab:dsp-fold` | shipping | Folds a license-derived coefficient into your DSP at the tagged statement via an optional `freqlab_dsp.{h,rs}` helper, so a bypassed license degrades the audio instead of leaving it clean. See [DSP-fold](#dsp-fold-anti-tamper-optional). |
 
 ### Placement rules
 
 1. The tag is a comment on its own line, immediately above the function definition you want to wrap.
 2. Other comments between tag and target are tolerated.
-3. Do not put a tag inside a function body. Definition sites only.
+3. Do not put a tag inside a function body. Definition sites only - the one exception is `// @freqlab:dsp-fold`, which goes at a statement *inside* your DSP (see [DSP-fold](#dsp-fold-anti-tamper-optional)).
 
 ```rust
 // @freqlab:require-license
@@ -360,6 +358,102 @@ Full working examples for all three frameworks (with status pill, banner, and mo
 
 ---
 
+## DSP-fold (anti-tamper, optional)
+
+`// @freqlab:require-license` gates your *whole* audio function, so a cracker who patches that one gate gets clean audio back. DSP-fold closes that gap: it folds a license-derived coefficient into your DSP, so a bypassed or invalid license produces **degraded audio** instead of clean silence. It's the one layer a simple "NOP the check" crack can't defeat - the cracked plugin just sounds wrong.
+
+Fully opt-in, same shape as the response helper: drop a `freqlab_dsp.{h,rs}` file in your project and tag the fold point with `// @freqlab:dsp-fold`. The transformer emits a call to your `freqlab_dsp_fold(...)` there. **You decide where it folds** - the default scales the output gain, but you can fold it into an envelope, a filter coefficient, a wet/dry mix, anything - by editing the helper, or by calling `freqlab_dsp_gain()` directly in your DSP.
+
+### What you'll hear locally (and what you won't)
+
+`freqlab_dsp_coefficient()` returns the **identity** (a no-op, gain `1.0`) in:
+
+- local / stub builds - always,
+- licensed cloud builds, and
+- cloud builds before freqlab arms enforcement (DSP-fold ships in a safe "shadow" state first, so it can never affect a legitimate buyer on day one).
+
+It only drifts off identity in an **armed** cloud build when the license is invalid or bypassed. Practical consequence: your audio is never touched during development, and you **cannot exercise the degraded-audio path in a local build** - the coefficient is `1.0` there by design. To confirm your fold point is wired, temporarily multiply by a constant like `0.5f` and check you hear it.
+
+### Helper bodies
+
+Discovery works like `freqlab_response` - the transformer walks up to your project root. Drop the file in, wire it (`mod freqlab_dsp;` in Rust, or `#include "freqlab_dsp.h"` in C++), and tag your fold point.
+
+**Rust** (`src/freqlab_dsp.rs`):
+
+```rust
+use freqlab_licensing as licensing;
+use nih_plug::prelude::Buffer;  // or your framework's buffer type
+
+// The fold coefficient as a gain: ~1.0 when licensed, off-1.0 when not.
+pub fn freqlab_dsp_gain() -> f32 {
+    (licensing::freqlab_dsp_coefficient() as f64
+        / licensing::FREQLAB_DSP_IDENTITY as f64) as f32
+}
+
+// The transformer calls this at your `// @freqlab:dsp-fold` tag. Edit to fold
+// the coefficient wherever you like.
+pub fn freqlab_dsp_fold(buffer: &mut Buffer) {
+    let g = freqlab_dsp_gain();
+    for channel_samples in buffer.iter_samples() {
+        for sample in channel_samples { *sample *= g; }
+    }
+}
+```
+
+**C++ / JUCE** (`src/freqlab_dsp.h`):
+
+```cpp
+#pragma once
+#include "freqlab_licensing.h"
+#include <juce_audio_basics/juce_audio_basics.h>
+
+inline float freqlab_dsp_gain() {
+    return static_cast<float>(
+        static_cast<double>(::freqlab::licensing::freqlab_dsp_coefficient()) /
+        static_cast<double>(::freqlab::licensing::FREQLAB_DSP_IDENTITY));
+}
+
+inline void freqlab_dsp_fold(juce::AudioBuffer<float>& buffer) {
+    buffer.applyGain(freqlab_dsp_gain());
+}
+```
+
+**C++ / iPlug2** (`src/freqlab_dsp.h`) - three-arg form, like the response helper:
+
+```cpp
+inline void freqlab_dsp_fold(iplug::sample** outputs, int nChans, int nFrames) {
+    const iplug::sample g = static_cast<iplug::sample>(freqlab_dsp_gain());
+    for (int c = 0; c < nChans; ++c)
+        for (int s = 0; s < nFrames; ++s)
+            outputs[c][s] *= g;
+}
+```
+
+### Placing the tag
+
+Unlike `// @freqlab:require-license` (which sits above a function), the `// @freqlab:dsp-fold` tag goes **inside** your audio function, on its own line at the point where the fold should run - normally right after your DSP has written the output. The transformer injects a `freqlab_dsp_fold(<buffer>)` call there, inferring `<buffer>` from your function's audio-buffer parameter.
+
+```rust
+fn process(&mut self, buffer: &mut Buffer, /* ... */) -> ProcessStatus {
+    // ... your DSP fills `buffer` ...
+    // @freqlab:dsp-fold
+    ProcessStatus::Normal
+}
+```
+
+```cpp
+void processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer&) override {
+    // ... your DSP fills `buffer` ...
+    // @freqlab:dsp-fold
+}
+```
+
+Prefer to fold somewhere the transformer can't reach (a private filter coefficient, a per-voice envelope)? Skip the tag and call `freqlab_dsp_gain()` directly in your DSP - it works identically.
+
+> **Audio-thread safety:** `freqlab_dsp_coefficient()` / `freqlab_dsp_gain()` are lock-free atomic reads, safe in the audio callback. Don't call `current()` / `refreshAsync()` / `validateAndActivate()` from the helper.
+
+---
+
 ## Status display in your UI
 
 How your plugin behaves when the license is invalid is decided by your `freqlab_response.{h,rs}` helper file (see [Customizing invalid-status response](#customizing-invalid-status-response-optional)). If you don't ship one, the audio side defaults to silence on invalid statuses - the `// @freqlab:require-license` tag handles the gate at the top of your audio function.
@@ -443,6 +537,9 @@ pub fn validate_and_activate(key: &str) -> Result<LicenseInfo, Error>;   // bloc
 pub fn deactivate_this_machine() -> Result<(), Error>;                   // blocking
 pub fn refresh() -> Result<(), Error>;                                   // blocking
 pub fn shutdown();                                                       // flips cancellation flag
+
+pub const FREQLAB_DSP_IDENTITY: u64;                                     // = 1 << 32 (gain 1.0)
+pub fn freqlab_dsp_coefficient() -> u64;                                 // audio-thread safe; DSP-fold (opt-in)
 ```
 
 ### C++
@@ -468,7 +565,7 @@ struct LicenseInfo {
     std::optional<std::string> buyerEmail;  // fall back to this when buyerName is absent
 };
 
-LicenseInfo current();             // ~5µs, allocates if features non-empty
+LicenseInfo current();             // ~5us, allocates if features non-empty
 Status      currentStatus();       // audio-thread safe
 void        validateAndActivate(const std::string& key,
                                 std::function<void(LicenseInfo)> onSuccess,
@@ -476,6 +573,9 @@ void        validateAndActivate(const std::string& key,
 void        deactivateThisMachine(std::function<void(bool)> done);
 void        refreshAsync();
 void        shutdown();            // call from plugin destructor
+
+inline constexpr std::uint64_t FREQLAB_DSP_IDENTITY = std::uint64_t{1} << 32;  // gain 1.0
+std::uint64_t freqlab_dsp_coefficient();  // audio-thread safe; DSP-fold (opt-in)
 
 }
 ```
