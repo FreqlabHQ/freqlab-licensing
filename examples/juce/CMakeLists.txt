@@ -100,7 +100,7 @@ target_include_directories(Jucerguy PRIVATE src)
 if(NOT TARGET freqlab_licensing)
     FetchContent_Declare(
         freqlab_licensing
-        GIT_REPOSITORY https://github.com/Nanoshrine-Interactive/freqlab-licensing
+        GIT_REPOSITORY https://github.com/FreqlabHQ/freqlab-licensing
         GIT_TAG main
     )
     FetchContent_MakeAvailable(freqlab_licensing)

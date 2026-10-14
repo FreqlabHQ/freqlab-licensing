@@ -33,7 +33,7 @@
 //! state. Remove the `features = [...]` line and rebuild to flip back
 //! to default ([`Status::NoConfig`]).
 //!
-//! See <https://github.com/Nanoshrine-Interactive/freqlab-licensing>.
+//! See <https://github.com/FreqlabHQ/freqlab-licensing>.
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]

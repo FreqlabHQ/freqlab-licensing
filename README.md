@@ -1,6 +1,6 @@
 # freqlab-licensing
 
-Local development surface for the [freqlab](https://freqlab.app) plugin licensing system. Seller plugin projects depend on this crate (Rust) or library (C++) so the licensing API resolves cleanly during ordinary local builds. When a plugin is submitted to the freqlab cloud build pipeline with licensing enabled, the build pipeline injects the real implementation at the same dependency name. Seller code is identical in both builds.
+Local development surface for the [freqlab](https://freqlab.co) plugin licensing system. Seller plugin projects depend on this crate (Rust) or library (C++) so the licensing API resolves cleanly during ordinary local builds. When a plugin is submitted to the freqlab cloud build pipeline with licensing enabled, the build pipeline injects the real implementation at the same dependency name. Seller code is identical in both builds.
 
 ```
 local build               ->  stub returns Status::NoConfig
@@ -76,7 +76,7 @@ cmake -S . -B build -DFREQLAB_LICENSING_DEV_TAMPERED=ON
 
 ```toml
 [dependencies]
-freqlab-licensing = { git = "https://github.com/Nanoshrine-Interactive/freqlab-licensing", tag = "v0.1.0" }
+freqlab-licensing = { git = "https://github.com/FreqlabHQ/freqlab-licensing", tag = "sdk-v0.1.1" }
 ```
 
 ### C++ (CMake)
@@ -93,8 +93,8 @@ target_link_libraries(MyPlugin PRIVATE freqlab::licensing)
 ```cmake
 include(FetchContent)
 FetchContent_Declare(freqlab_licensing
-    GIT_REPOSITORY https://github.com/Nanoshrine-Interactive/freqlab-licensing
-    GIT_TAG v0.1.0)
+    GIT_REPOSITORY https://github.com/FreqlabHQ/freqlab-licensing
+    GIT_TAG sdk-v0.1.1)
 FetchContent_MakeAvailable(freqlab_licensing)
 target_link_libraries(MyPlugin PRIVATE freqlab::licensing)
 ```
@@ -741,13 +741,13 @@ The transformer rewrites `processBlock`, `process`, or whatever you tag, regardl
 Releases are tagged `vMAJOR.MINOR.PATCH`. Pin to a tag when shipping production plugins so future stub releases do not change the API your plugin compiles against:
 
 ```toml
-freqlab-licensing = { git = "https://github.com/Nanoshrine-Interactive/freqlab-licensing", tag = "v0.1.0" }
+freqlab-licensing = { git = "https://github.com/FreqlabHQ/freqlab-licensing", tag = "sdk-v0.1.1" }
 ```
 
 ```cmake
 FetchContent_Declare(freqlab_licensing
-    GIT_REPOSITORY https://github.com/Nanoshrine-Interactive/freqlab-licensing
-    GIT_TAG v0.1.0)
+    GIT_REPOSITORY https://github.com/FreqlabHQ/freqlab-licensing
+    GIT_TAG sdk-v0.1.1)
 ```
 
 The freqlab cloud build pipeline tracks matching versions on its side.
