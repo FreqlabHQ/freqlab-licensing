@@ -24,4 +24,4 @@ serde_json = "1.0"
 #   features = ["dev-grace"]           # expiring soon (amber)
 #   features = ["dev-overdue"]         # missed check-in, recoverable (amber)
 #   features = ["dev-trial"]           # trial active (blue)
-freqlab-licensing = { git = "https://github.com/FreqlabHQ/freqlab-licensing", branch = "main" }
+freqlab-licensing = { git = "https://github.com/FreqlabHQ/freqlab-licensing", tag = "sdk-v0.1.2" }

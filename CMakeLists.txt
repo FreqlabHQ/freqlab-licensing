@@ -11,7 +11,7 @@
 
 cmake_minimum_required(VERSION 3.16)
 project(freqlab_licensing
-    VERSION 0.1.0
+    VERSION 0.1.2
     DESCRIPTION "Local development surface for freqlab plugin licensing"
     LANGUAGES CXX
 )

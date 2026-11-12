@@ -18,13 +18,13 @@
 //!
 //! ```toml
 //! # any one of:
-//! freqlab-licensing = { git = "...", branch = "main", features = ["dev-not-activated"] }
-//! freqlab-licensing = { git = "...", branch = "main", features = ["dev-licensed"] }
-//! freqlab-licensing = { git = "...", branch = "main", features = ["dev-expired"] }
-//! freqlab-licensing = { git = "...", branch = "main", features = ["dev-tampered"] }
-//! freqlab-licensing = { git = "...", branch = "main", features = ["dev-grace"] }
-//! freqlab-licensing = { git = "...", branch = "main", features = ["dev-overdue"] }
-//! freqlab-licensing = { git = "...", branch = "main", features = ["dev-trial"] }
+//! freqlab-licensing = { git = "...", tag = "sdk-v0.1.2", features = ["dev-not-activated"] }
+//! freqlab-licensing = { git = "...", tag = "sdk-v0.1.2", features = ["dev-licensed"] }
+//! freqlab-licensing = { git = "...", tag = "sdk-v0.1.2", features = ["dev-expired"] }
+//! freqlab-licensing = { git = "...", tag = "sdk-v0.1.2", features = ["dev-tampered"] }
+//! freqlab-licensing = { git = "...", tag = "sdk-v0.1.2", features = ["dev-grace"] }
+//! freqlab-licensing = { git = "...", tag = "sdk-v0.1.2", features = ["dev-overdue"] }
+//! freqlab-licensing = { git = "...", tag = "sdk-v0.1.2", features = ["dev-trial"] }
 //! ```
 //!
 //! Rebuild. [`current_status`] now returns the matching variant and

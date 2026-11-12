@@ -39,16 +39,16 @@ The fake `license_key` (`DEV-MODE-XXXX-YYYY-ZZZZ`), `license_id`, `expiry`, `fea
 **Rust (Cargo):** edit your `Cargo.toml`, rebuild.
 ```toml
 # default (licensing UI hidden):
-freqlab-licensing = { git = "...", branch = "main" }
+freqlab-licensing = { git = "...", tag = "sdk-v0.1.2" }
 
 # pick one of:
-freqlab-licensing = { git = "...", branch = "main", features = ["dev-not-activated"] }
-freqlab-licensing = { git = "...", branch = "main", features = ["dev-licensed"] }
-freqlab-licensing = { git = "...", branch = "main", features = ["dev-expired"] }
-freqlab-licensing = { git = "...", branch = "main", features = ["dev-tampered"] }
-freqlab-licensing = { git = "...", branch = "main", features = ["dev-grace"] }
-freqlab-licensing = { git = "...", branch = "main", features = ["dev-overdue"] }
-freqlab-licensing = { git = "...", branch = "main", features = ["dev-trial"] }
+freqlab-licensing = { git = "...", tag = "sdk-v0.1.2", features = ["dev-not-activated"] }
+freqlab-licensing = { git = "...", tag = "sdk-v0.1.2", features = ["dev-licensed"] }
+freqlab-licensing = { git = "...", tag = "sdk-v0.1.2", features = ["dev-expired"] }
+freqlab-licensing = { git = "...", tag = "sdk-v0.1.2", features = ["dev-tampered"] }
+freqlab-licensing = { git = "...", tag = "sdk-v0.1.2", features = ["dev-grace"] }
+freqlab-licensing = { git = "...", tag = "sdk-v0.1.2", features = ["dev-overdue"] }
+freqlab-licensing = { git = "...", tag = "sdk-v0.1.2", features = ["dev-trial"] }
 ```
 
 **C++ (CMake):** pass the option at configure time.
@@ -76,7 +76,7 @@ cmake -S . -B build -DFREQLAB_LICENSING_DEV_TAMPERED=ON
 
 ```toml
 [dependencies]
-freqlab-licensing = { git = "https://github.com/FreqlabHQ/freqlab-licensing", tag = "sdk-v0.1.1" }
+freqlab-licensing = { git = "https://github.com/FreqlabHQ/freqlab-licensing", tag = "sdk-v0.1.2" }
 ```
 
 ### C++ (CMake)
@@ -94,7 +94,7 @@ target_link_libraries(MyPlugin PRIVATE freqlab::licensing)
 include(FetchContent)
 FetchContent_Declare(freqlab_licensing
     GIT_REPOSITORY https://github.com/FreqlabHQ/freqlab-licensing
-    GIT_TAG sdk-v0.1.1)
+    GIT_TAG sdk-v0.1.2)
 FetchContent_MakeAvailable(freqlab_licensing)
 target_link_libraries(MyPlugin PRIVATE freqlab::licensing)
 ```
@@ -738,16 +738,16 @@ The transformer rewrites `processBlock`, `process`, or whatever you tag, regardl
 
 ## Versioning
 
-Releases are tagged `vMAJOR.MINOR.PATCH`. Pin to a tag when shipping production plugins so future stub releases do not change the API your plugin compiles against:
+Releases are tagged `sdk-vMAJOR.MINOR.PATCH` (for example `sdk-v0.1.2`). Pin to a tag when shipping production plugins so future stub releases do not change the API your plugin compiles against:
 
 ```toml
-freqlab-licensing = { git = "https://github.com/FreqlabHQ/freqlab-licensing", tag = "sdk-v0.1.1" }
+freqlab-licensing = { git = "https://github.com/FreqlabHQ/freqlab-licensing", tag = "sdk-v0.1.2" }
 ```
 
 ```cmake
 FetchContent_Declare(freqlab_licensing
     GIT_REPOSITORY https://github.com/FreqlabHQ/freqlab-licensing
-    GIT_TAG sdk-v0.1.1)
+    GIT_TAG sdk-v0.1.2)
 ```
 
 The freqlab cloud build pipeline tracks matching versions on its side.

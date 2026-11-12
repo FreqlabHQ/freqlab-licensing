@@ -128,7 +128,7 @@ if(NOT TARGET freqlab_licensing)
     FetchContent_Declare(
         freqlab_licensing
         GIT_REPOSITORY https://github.com/FreqlabHQ/freqlab-licensing
-        GIT_TAG main
+        GIT_TAG sdk-v0.1.2
     )
     FetchContent_MakeAvailable(freqlab_licensing)
 endif()
