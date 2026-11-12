@@ -1,13 +1,15 @@
 # freqlab_licensing: local-build static library.
 #
-# Drop this directory under your plugin repo's vendor/ and add:
+# Add it after project() with a guard, and link the freqlab_licensing target:
 #
-#   add_subdirectory(vendor/freqlab-licensing)
-#   target_link_libraries(MyPlugin PRIVATE freqlab::licensing)
+#   if(NOT TARGET freqlab_licensing)
+#       add_subdirectory(vendor/freqlab-licensing)   # or FetchContent
+#   endif()
+#   target_link_libraries(MyPlugin PRIVATE freqlab_licensing)
 #
-# The cloud build pipeline rewrites the add_subdirectory argument to point
-# at the real SDK at build time. The freqlab::licensing alias is identical
-# in both builds, so seller code does not change.
+# A licensed cloud build adds the real SDK as freqlab_licensing during
+# project(), so the guard skips this stub there. Link freqlab_licensing, not
+# the freqlab::licensing alias below: the real SDK doesn't define the alias.
 
 cmake_minimum_required(VERSION 3.16)
 project(freqlab_licensing

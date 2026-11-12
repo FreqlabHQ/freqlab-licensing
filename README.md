@@ -81,23 +81,29 @@ freqlab-licensing = { git = "https://github.com/FreqlabHQ/freqlab-licensing", ta
 
 ### C++ (CMake)
 
-Vendor a copy under `vendor/freqlab-licensing/` (or use `FetchContent`), then:
-
-```cmake
-add_subdirectory(vendor/freqlab-licensing)
-target_link_libraries(MyPlugin PRIVATE freqlab::licensing)
-```
-
-`FetchContent` form:
+Add it after `project()`, inside an `if(NOT TARGET freqlab_licensing)` guard, and link `freqlab_licensing`:
 
 ```cmake
 include(FetchContent)
-FetchContent_Declare(freqlab_licensing
-    GIT_REPOSITORY https://github.com/FreqlabHQ/freqlab-licensing
-    GIT_TAG sdk-v0.1.2)
-FetchContent_MakeAvailable(freqlab_licensing)
-target_link_libraries(MyPlugin PRIVATE freqlab::licensing)
+if(NOT TARGET freqlab_licensing)
+    FetchContent_Declare(freqlab_licensing
+        GIT_REPOSITORY https://github.com/FreqlabHQ/freqlab-licensing
+        GIT_TAG sdk-v0.1.2)
+    FetchContent_MakeAvailable(freqlab_licensing)
+endif()
+target_link_libraries(MyPlugin PRIVATE freqlab_licensing)
 ```
+
+Or vendor a copy under `vendor/freqlab-licensing/`, with the same guard:
+
+```cmake
+if(NOT TARGET freqlab_licensing)
+    add_subdirectory(vendor/freqlab-licensing)
+endif()
+target_link_libraries(MyPlugin PRIVATE freqlab_licensing)
+```
+
+Keep the guard and the `freqlab_licensing` target name. A licensed cloud build has already added the real SDK as `freqlab_licensing` during `project()`: without the guard CMake stops with a duplicate-target error, and the real SDK has no `freqlab::licensing` alias, so linking that name fails. (`freqlab::licensing` is still the C++ namespace.)
 
 ---
 
@@ -145,7 +151,7 @@ endif()
 if(APPLE)
     # Universal binary - Apple Silicon CI runners cross-compile to
     # x86_64 because the Xcode toolchain ships both SDKs.
-    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "")
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "")
     set(CMAKE_OSX_ARCHITECTURES   "arm64;x86_64" CACHE STRING "")
 endif()
 

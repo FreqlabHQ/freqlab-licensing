@@ -37,7 +37,7 @@ namespace freqlab {
 namespace licensing {
 
 /// Top-level state of the buyer's license. Defaults to NoConfig in local
-/// builds (override with FREQLAB_LICENSING_DEV=1).
+/// builds (preview other states with a FREQLAB_LICENSING_DEV_* CMake option).
 enum class Status {
     Licensed,       ///< Valid, in good standing.
     Trial,          ///< Trial active. Treat as licensed for plugin behavior.
