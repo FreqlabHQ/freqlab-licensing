@@ -171,7 +171,7 @@ std::thread::spawn(|| { let _ = freqlab_licensing::refresh(); });
 ```
 
 ```cpp
-// In your plugin's prepareToPlay / initialize / setup hook:
+// Once, in your processor's constructor (hosts can call prepareToPlay many times):
 freqlab::licensing::refreshAsync();
 ```
 

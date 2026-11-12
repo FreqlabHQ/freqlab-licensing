@@ -64,6 +64,6 @@ set_target_properties(freqlab_licensing PROPERTIES
     POSITION_INDEPENDENT_CODE ON
 )
 
-# Canonical seller-facing target name. The cloud build replaces the
-# underlying target with the real implementation while keeping this alias.
+# Kept for older projects. The real SDK in a licensed cloud build has no
+# alias, so link freqlab_licensing.
 add_library(freqlab::licensing ALIAS freqlab_licensing)
